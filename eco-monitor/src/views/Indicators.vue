@@ -13,9 +13,13 @@ const rsIndicators = computed(() => {
   const d = remoteData.value
   if (!d) return []
   const round = (v) => (v == null ? null : Math.round(v * 1000) / 1000)
+  const idx = d.indices || {}
   return [
     { code: 'NDVI', name: '归一化植被指数', category: '植被', value: round(d.ndvi?.mean), unit: '', level: ndviLevel(d.ndvi?.mean), trend: 1, source: '遥感' },
     { code: 'NDWI', name: '归一化水体指数', category: '水体', value: round(d.ndwi?.mean), unit: '', level: ndwiLevel(d.ndwi?.mean), trend: 0, source: '遥感' },
+    { code: 'EVI', name: '增强植被指数', category: '植被', value: round(idx.evi?.mean), unit: '', level: eviLevel(idx.evi?.mean), trend: 1, source: '遥感' },
+    { code: 'NDBSI', name: '干度', category: '生态', value: round(idx.ndbsi?.mean), unit: '', level: ndbsiLevel(idx.ndbsi?.mean), trend: 0, source: '遥感' },
+    { code: 'WET', name: '湿度', category: '生态', value: round(idx.wet?.mean), unit: '', level: wetLevel(idx.wet?.mean), trend: 0, source: '遥感' },
   ]
 })
 
@@ -31,8 +35,33 @@ function ndwiLevel(v) {
   if (v >= 0) return '正常'
   return '偏低'
 }
+function eviLevel(v) {
+  if (v == null) return '—'
+  if (v >= 0.5) return '良好'
+  if (v >= 0.2) return '正常'
+  return '偏低'
+}
+function ndbsiLevel(v) {
+  if (v == null) return '—'
+  if (v <= -0.1) return '优'
+  if (v <= 0.15) return '正常'
+  return '偏高'
+}
+function wetLevel(v) {
+  if (v == null) return '—'
+  if (v >= -0.15) return '良好'
+  if (v >= -0.4) return '正常'
+  return '偏低'
+}
 
-const all = computed(() => [...indicators, ...rsIndicators.value])
+const all = computed(() => {
+  const real = rsIndicators.value
+  const realByCode = Object.fromEntries(real.map((i) => [i.code, i]))
+  // 用遥感实算值覆盖同编码的演示项（EVI/干度/湿度），其余演示项保留；NDVI/NDWI 为新增
+  const merged = indicators.map((i) => realByCode[i.code] || i)
+  const added = real.filter((i) => !indicators.some((m) => m.code === i.code))
+  return [...merged, ...added]
+})
 const filtered = computed(() =>
   active.value === '全部' ? all.value : all.value.filter((i) => i.category === active.value)
 )
@@ -88,7 +117,7 @@ function trendColor(t) { return t > 0 ? '#0ca30c' : t < 0 ? '#d03b3b' : '#898781
       </table>
     </div>
 
-    <p class="note">NDVI / NDWI 来自 Sentinel-2 遥感实算（public/data/ndvi.json）；其余为演示数据，后续可对接 STAC 数据目录与实时监测接口。</p>
+    <p class="note">NDVI / NDWI / EVI / 干度 / 湿度 来自 Sentinel-2 遥感实算（public/data/ndvi.json）；其余为演示数据，后续可对接 STAC 数据目录与实时监测接口。</p>
   </div>
 </template>
 

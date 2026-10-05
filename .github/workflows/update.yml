@@ -25,6 +25,7 @@ jobs:
           python download.py
           python ndvi.py
           python ndwi.py
+          python indices.py
           python timeseries.py
           python export_frontend.py
 

@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 BBOX = [104.3, 28.4, 105.1, 29.0]
 
 # 需要的波段：红 / 绿 / 近红外 / 短波红外
-BANDS = {"red": "B04", "green": "B03", "nir": "B08", "swir": "B11"}
+BANDS = {"red": "B04", "green": "B03", "blue": "B02", "nir": "B08", "swir": "B11", "swir2": "B12"}
 
 OUT = Path(__file__).parent / "data"
 OUT.mkdir(exist_ok=True)

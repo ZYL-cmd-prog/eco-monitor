@@ -37,6 +37,14 @@ def stats(a):
 ndvi = load(RESULT / "NDVI.tif")
 ndwi = load(RESULT / "NDWI.tif")
 
+# 扩展生态指数（EVI/干度/湿度），由 indices.py 生成；文件不存在则跳过
+indices = {}
+for _key in ("EVI", "NDBSI", "WET"):
+    _p = RESULT / f"{_key}.tif"
+    if _p.exists():
+        _a = load(_p)
+        indices[_key.lower()] = {**stats(_a), "image": f"/data/{_key}.png"}
+
 # 读取 download.py 记录的影像日期
 date = "待定"
 meta = DATA / "meta.json"
@@ -66,11 +74,16 @@ data = {
         "image": "/data/NDWI.png",
     },
     "timeseries": timeseries,
+    "indices": indices,
 }
 
 # 拷贝图片到前端
 shutil.copy(RESULT / "NDVI.png", FRONTEND_DATA / "NDVI.png")
 shutil.copy(RESULT / "NDWI.png", FRONTEND_DATA / "NDWI.png")
+for _key in ("EVI", "NDBSI", "WET"):
+    _p = RESULT / f"{_key}.png"
+    if _p.exists():
+        shutil.copy(_p, FRONTEND_DATA / f"{_key}.png")
 
 with open(FRONTEND_DATA / "ndvi.json", "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
