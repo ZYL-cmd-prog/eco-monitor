@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 遥感中间数据（每次都重新生成，不入库）
+rs-pipeline/data/
+rs-pipeline/result/
+rs-pipeline/deploy.zip
+
+# 前端
+eco-monitor/node_modules/
+eco-monitor/dist/
+eco-monitor/public/data/
+
+# 环境变量 / 密钥
+.env

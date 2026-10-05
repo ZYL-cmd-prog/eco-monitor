@@ -1,0 +1,45 @@
+name: 更新生态数据
+
+on:
+  schedule:
+    # 每周一 03:17 UTC（北京时间 11:17），避开整点。可按需改频率
+    - cron: "17 3 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装 Python 依赖
+        run: pip install -r requirements.txt
+
+      - name: 跑遥感管线（下载 → NDVI/NDWI → 时序 → 导出前端数据）
+        run: |
+          cd rs-pipeline
+          python download.py
+          python ndvi.py
+          python ndwi.py
+          python timeseries.py
+          python export_frontend.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 构建前端
+        run: |
+          cd eco-monitor
+          npm install
+          npm run build
+
+      - name: 部署到 Netlify
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: python rs-pipeline/deploy.py
