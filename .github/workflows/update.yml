@@ -19,7 +19,9 @@ jobs:
       - name: 安装 Python 依赖
         run: pip install -r requirements.txt
 
-      - name: 跑遥感管线（下载 → NDVI/NDWI → 时序 → 大气 → 导出前端数据）
+      - name: 跑遥感管线（下载 → NDVI/NDWI → 时序 → 大气 → 监测站 → 土壤 → 导出前端数据）
+        env:
+          AQICN_TOKEN: ${{ secrets.AQICN_TOKEN }}
         run: |
           cd rs-pipeline
           python download.py
@@ -29,6 +31,8 @@ jobs:
           python lst.py
           python timeseries.py
           python s5p.py
+          python aqi.py
+          python soil.py
           python export_frontend.py
 
       - uses: actions/setup-node@v4

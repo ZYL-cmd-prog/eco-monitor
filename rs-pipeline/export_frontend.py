@@ -58,6 +58,18 @@ _s5p = RESULT / "s5p.json"
 if _s5p.exists():
     atmosphere = json.loads(_s5p.read_text(encoding="utf-8"))
 
+# 空气质量监测站地面浓度（AQICN，由 aqi.py 生成；没有 token 则跳过）
+air = None
+_aqi = RESULT / "aqi.json"
+if _aqi.exists():
+    air = json.loads(_aqi.read_text(encoding="utf-8"))
+
+# 土壤 pH / 有机质（SoilGrids，由 soil.py 生成；没有则跳过）
+soil = None
+_soil = RESULT / "soil.json"
+if _soil.exists():
+    soil = json.loads(_soil.read_text(encoding="utf-8"))
+
 # 读取 download.py 记录的影像日期
 date = "待定"
 meta = DATA / "meta.json"
@@ -89,6 +101,8 @@ data = {
     "timeseries": timeseries,
     "indices": indices,
     "atmosphere": atmosphere,
+    "air": air,
+    "soil": soil,
 }
 
 # 拷贝图片到前端
