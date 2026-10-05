@@ -15,6 +15,7 @@ const rsIndicators = computed(() => {
   const round = (v) => (v == null ? null : Math.round(v * 1000) / 1000)
   const idx = d.indices || {}
   const ndviVal = d.ndvi?.mean
+  const atmo = d.atmosphere || {}
   return [
     { code: 'NDVI', name: '归一化植被指数', category: '植被', value: round(ndviVal), unit: '', level: ndviLevel(ndviVal), trend: 1, source: '遥感' },
     { code: 'NDWI', name: '归一化水体指数', category: '水体', value: round(d.ndwi?.mean), unit: '', level: ndwiLevel(d.ndwi?.mean), trend: 0, source: '遥感' },
@@ -25,6 +26,9 @@ const rsIndicators = computed(() => {
     { code: 'WET', name: '湿度', category: '生态', value: round(idx.wet?.mean), unit: '', level: wetLevel(idx.wet?.mean), trend: 0, source: '遥感' },
     { code: 'VI', name: '绿度', category: '生态', value: round(ndviVal), unit: '', level: ndviLevel(ndviVal), trend: 1, source: '遥感' },
     { code: 'LST', name: '热度', category: '生态', value: round(idx.lst?.mean), unit: '°C', level: lstLevel(idx.lst?.mean), trend: 0, source: '遥感' },
+    { code: 'NO2', name: '二氧化氮柱浓度', category: '大气', value: round(atmo.no2?.median), unit: atmo.no2?.unit || 'μmol/m²', level: no2Level(atmo.no2?.median), trend: 0, source: '遥感' },
+    { code: 'SO2', name: '二氧化硫柱浓度', category: '大气', value: round(atmo.so2?.median), unit: atmo.so2?.unit || 'μmol/m²', level: so2Level(atmo.so2?.median), trend: 0, source: '遥感' },
+    { code: 'O3', name: '臭氧总柱', category: '大气', value: round(atmo.o3?.median), unit: atmo.o3?.unit || 'DU', level: o3Level(atmo.o3?.median), trend: 0, source: '遥感' },
   ]
 })
 
@@ -75,6 +79,25 @@ function lstLevel(v) {
   if (v <= 35) return '正常'
   if (v <= 45) return '偏高'
   return '高'
+}
+function no2Level(v) {
+  if (v == null) return '—'
+  if (v < 15) return '优'
+  if (v < 30) return '良'
+  if (v < 60) return '偏高'
+  return '高'
+}
+function so2Level(v) {
+  if (v == null) return '—'
+  if (v < 2) return '优'
+  if (v < 5) return '良'
+  return '偏高'
+}
+function o3Level(v) {
+  if (v == null) return '—'
+  if (v < 250) return '偏低'
+  if (v <= 350) return '正常'
+  return '偏高'
 }
 
 const all = computed(() => {
@@ -140,7 +163,7 @@ function trendColor(t) { return t > 0 ? '#0ca30c' : t < 0 ? '#d03b3b' : '#898781
       </table>
     </div>
 
-    <p class="note">植被与生态类指数（NDVI / NDWI / EVI / FVC / LAI / 绿度 / 干度 / 湿度 / 热度）来自 Sentinel-2 / Landsat 遥感实算；大气、水质、土壤类为演示数据，需对接监测站点。</p>
+    <p class="note">植被与生态类指数（NDVI / NDWI / EVI / FVC / LAI / 绿度 / 干度 / 湿度 / 热度）来自 Sentinel-2 / Landsat 遥感实算；大气 NO2 / SO2 / O3 为 Sentinel-5P 柱浓度实算（非地面 μg/m³ 浓度）；AQI、水质、土壤类仍需对接监测站点（演示数据）。</p>
   </div>
 </template>
 

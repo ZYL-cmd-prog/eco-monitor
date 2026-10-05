@@ -52,6 +52,12 @@ if _lst_meta.exists() and "lst" in indices:
     indices["lst"]["date"] = _m.get("date")
     indices["lst"]["scene_id"] = _m.get("scene_id")
 
+# 大气柱浓度（Sentinel-5P，由 s5p.py 生成；没有则跳过）
+atmosphere = None
+_s5p = RESULT / "s5p.json"
+if _s5p.exists():
+    atmosphere = json.loads(_s5p.read_text(encoding="utf-8"))
+
 # 读取 download.py 记录的影像日期
 date = "待定"
 meta = DATA / "meta.json"
@@ -82,6 +88,7 @@ data = {
     },
     "timeseries": timeseries,
     "indices": indices,
+    "atmosphere": atmosphere,
 }
 
 # 拷贝图片到前端
