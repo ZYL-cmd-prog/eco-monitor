@@ -14,12 +14,17 @@ const rsIndicators = computed(() => {
   if (!d) return []
   const round = (v) => (v == null ? null : Math.round(v * 1000) / 1000)
   const idx = d.indices || {}
+  const ndviVal = d.ndvi?.mean
   return [
-    { code: 'NDVI', name: '归一化植被指数', category: '植被', value: round(d.ndvi?.mean), unit: '', level: ndviLevel(d.ndvi?.mean), trend: 1, source: '遥感' },
+    { code: 'NDVI', name: '归一化植被指数', category: '植被', value: round(ndviVal), unit: '', level: ndviLevel(ndviVal), trend: 1, source: '遥感' },
     { code: 'NDWI', name: '归一化水体指数', category: '水体', value: round(d.ndwi?.mean), unit: '', level: ndwiLevel(d.ndwi?.mean), trend: 0, source: '遥感' },
     { code: 'EVI', name: '增强植被指数', category: '植被', value: round(idx.evi?.mean), unit: '', level: eviLevel(idx.evi?.mean), trend: 1, source: '遥感' },
+    { code: 'FVC', name: '植被覆盖度', category: '植被', value: round(idx.fvc?.mean), unit: '', level: fvcLevel(idx.fvc?.mean), trend: 1, source: '遥感' },
+    { code: 'LAI', name: '叶面积指数', category: '植被', value: round(idx.lai?.mean), unit: '', level: laiLevel(idx.lai?.mean), trend: 1, source: '遥感' },
     { code: 'NDBSI', name: '干度', category: '生态', value: round(idx.ndbsi?.mean), unit: '', level: ndbsiLevel(idx.ndbsi?.mean), trend: 0, source: '遥感' },
     { code: 'WET', name: '湿度', category: '生态', value: round(idx.wet?.mean), unit: '', level: wetLevel(idx.wet?.mean), trend: 0, source: '遥感' },
+    { code: 'VI', name: '绿度', category: '生态', value: round(ndviVal), unit: '', level: ndviLevel(ndviVal), trend: 1, source: '遥感' },
+    { code: 'LST', name: '热度', category: '生态', value: round(idx.lst?.mean), unit: '°C', level: lstLevel(idx.lst?.mean), trend: 0, source: '遥感' },
   ]
 })
 
@@ -52,6 +57,24 @@ function wetLevel(v) {
   if (v >= -0.15) return '良好'
   if (v >= -0.4) return '正常'
   return '偏低'
+}
+function fvcLevel(v) {
+  if (v == null) return '—'
+  if (v >= 0.7) return '良好'
+  if (v >= 0.4) return '正常'
+  return '偏低'
+}
+function laiLevel(v) {
+  if (v == null) return '—'
+  if (v >= 3) return '良好'
+  if (v >= 1.5) return '正常'
+  return '偏低'
+}
+function lstLevel(v) {
+  if (v == null) return '—'
+  if (v <= 35) return '正常'
+  if (v <= 45) return '偏高'
+  return '高'
 }
 
 const all = computed(() => {
@@ -117,7 +140,7 @@ function trendColor(t) { return t > 0 ? '#0ca30c' : t < 0 ? '#d03b3b' : '#898781
       </table>
     </div>
 
-    <p class="note">NDVI / NDWI / EVI / 干度 / 湿度 来自 Sentinel-2 遥感实算（public/data/ndvi.json）；其余为演示数据，后续可对接 STAC 数据目录与实时监测接口。</p>
+    <p class="note">植被与生态类指数（NDVI / NDWI / EVI / FVC / LAI / 绿度 / 干度 / 湿度 / 热度）来自 Sentinel-2 / Landsat 遥感实算；大气、水质、土壤类为演示数据，需对接监测站点。</p>
   </div>
 </template>
 

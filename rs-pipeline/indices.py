@@ -80,6 +80,15 @@ ndbsi = np.clip((ibi + si) / 2, -1, 1)
 wet = np.clip(0.1511 * blue + 0.1973 * green + 0.3283 * red + 0.3407 * nir
               - 0.7117 * swir - 0.4559 * swir2, -1, 1)
 
+# NDVI（供 FVC 使用）
+ndvi = (nir - red) / (nir + red + 1e-6)
+
+# FVC 植被覆盖度（像元二分模型，NDVI_soil=0.05，NDVI_veg=0.7）
+fvc = np.clip((ndvi - 0.05) / (0.7 - 0.05), 0, 1)
+
+# LAI 叶面积指数（经验模型 Boegh 2002：LAI = 3.618*EVI - 0.118）
+lai = np.clip(3.618 * evi - 0.118, 0, 8)
+
 
 def write(arr, name, cmap, vmin, vmax):
     profile.update(dtype="float32", count=1, driver="GTiff", nodata=None)
@@ -93,4 +102,7 @@ def write(arr, name, cmap, vmin, vmax):
 write(evi, "EVI", "YlGn", -0.2, 0.8)
 write(ndbsi, "NDBSI", "YlOrBr", -0.4, 0.6)
 write(wet, "WET", "YlGnBu", -0.6, 0.1)
-print("已输出:", RESULT / "EVI.tif", RESULT / "NDBSI.tif", RESULT / "WET.tif")
+write(fvc, "FVC", "YlGn", 0.0, 1.0)
+write(lai, "LAI", "Greens", 0.0, 5.0)
+print("已输出:", RESULT / "EVI.tif", RESULT / "NDBSI.tif", RESULT / "WET.tif",
+      RESULT / "FVC.tif", RESULT / "LAI.tif")

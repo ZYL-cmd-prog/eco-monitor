@@ -39,11 +39,18 @@ ndwi = load(RESULT / "NDWI.tif")
 
 # 扩展生态指数（EVI/干度/湿度），由 indices.py 生成；文件不存在则跳过
 indices = {}
-for _key in ("EVI", "NDBSI", "WET"):
+for _key in ("EVI", "NDBSI", "WET", "FVC", "LAI", "LST"):
     _p = RESULT / f"{_key}.tif"
     if _p.exists():
         _a = load(_p)
         indices[_key.lower()] = {**stats(_a), "image": f"/data/{_key}.png"}
+
+# LST 影像日期（Landsat，与 Sentinel-2 快照日期不同）
+_lst_meta = RESULT / "lst_meta.json"
+if _lst_meta.exists() and "lst" in indices:
+    _m = json.loads(_lst_meta.read_text(encoding="utf-8"))
+    indices["lst"]["date"] = _m.get("date")
+    indices["lst"]["scene_id"] = _m.get("scene_id")
 
 # 读取 download.py 记录的影像日期
 date = "待定"
@@ -80,7 +87,7 @@ data = {
 # 拷贝图片到前端
 shutil.copy(RESULT / "NDVI.png", FRONTEND_DATA / "NDVI.png")
 shutil.copy(RESULT / "NDWI.png", FRONTEND_DATA / "NDWI.png")
-for _key in ("EVI", "NDBSI", "WET"):
+for _key in ("EVI", "NDBSI", "WET", "FVC", "LAI", "LST"):
     _p = RESULT / f"{_key}.png"
     if _p.exists():
         shutil.copy(_p, FRONTEND_DATA / f"{_key}.png")

@@ -26,6 +26,7 @@ jobs:
           python ndvi.py
           python ndwi.py
           python indices.py
+          python lst.py
           python timeseries.py
           python export_frontend.py
 
