@@ -64,11 +64,23 @@ _aqi = RESULT / "aqi.json"
 if _aqi.exists():
     air = json.loads(_aqi.read_text(encoding="utf-8"))
 
-# 土壤 pH / 有机质（SoilGrids，由 soil.py 生成；没有则跳过）
+# 土壤 pH / 有机质 / 质量指数（SoilGrids，由 soil.py 生成；没有则跳过）
 soil = None
 _soil = RESULT / "soil.json"
 if _soil.exists():
     soil = json.loads(_soil.read_text(encoding="utf-8"))
+
+# 净初级生产力 NPP（MODIS MOD17A3HGF，由 npp.py 生成；没有则跳过）
+npp = None
+_npp = RESULT / "npp.json"
+if _npp.exists():
+    npp = json.loads(_npp.read_text(encoding="utf-8"))
+
+# 水体反演（FAI 藻类 + 浑浊度，由 water.py 生成；没有则跳过）
+water = None
+_water = RESULT / "water.json"
+if _water.exists():
+    water = json.loads(_water.read_text(encoding="utf-8"))
 
 # 读取 download.py 记录的影像日期
 date = "待定"
@@ -103,6 +115,8 @@ data = {
     "atmosphere": atmosphere,
     "air": air,
     "soil": soil,
+    "npp": npp,
+    "water": water,
 }
 
 # 拷贝图片到前端

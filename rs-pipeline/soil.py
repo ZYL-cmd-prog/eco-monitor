@@ -13,6 +13,7 @@
 import json
 import os
 import tempfile
+import time
 import urllib.request
 import numpy as np
 import rasterio
@@ -34,12 +35,20 @@ def fetch_coverage(prop):
            f"&SUBSET=long({BBOX[0]},{BBOX[2]})&SUBSET=lat({BBOX[1]},{BBOX[3]})"
            "&SUBSETTINGCRS=http://www.opengis.net/def/crs/EPSG/0/4326")
     tmp = os.path.join(tempfile.gettempdir(), f"soil_{prop}.tif")
-    urllib.request.urlretrieve(url, tmp)
-    with rasterio.open(tmp) as src:
-        arr = src.read(1).astype(np.float64)
-        nodata = src.nodata
-    os.remove(tmp)
-    return arr, nodata
+    for attempt in range(3):
+        try:
+            urllib.request.urlretrieve(url, tmp)
+            with rasterio.open(tmp) as src:
+                arr = src.read(1).astype(np.float64)
+                nodata = src.nodata
+            os.remove(tmp)
+            return arr, nodata
+        except Exception as e:
+            print(f"  {prop}: 下载失败({type(e).__name__})，重试 {attempt + 1}/3")
+            if os.path.exists(tmp):
+                os.remove(tmp)
+            time.sleep(3)
+    raise RuntimeError(f"{prop} 下载失败")
 
 
 def stats(arr, nodata):
@@ -67,6 +76,11 @@ ph_value = ph["mean"] / 10.0          # 存储 pH×10 -> pH
 soc_g_kg = soc["mean"] * 0.1          # dg/kg -> g/kg
 som_g_kg = soc_g_kg * 1.724           # 有机碳 -> 有机质
 
+# SQI 土壤质量指数（0-100）：由 SOC（肥力）与 pH（酸碱）合成
+soc_score = min(100.0, soc_g_kg * 2.5)                    # 40 g/kg 有机碳 -> 100
+ph_score = max(0.0, 100.0 - abs(ph_value - 6.5) * 20.0)   # pH 6.5 最优
+sqi = round(0.6 * soc_score + 0.4 * ph_score, 1)
+
 out = {
     "date": datetime.now().strftime("%Y-%m-%d"),
     "source": "SoilGrids (ISRIC, 250m)",
@@ -84,6 +98,12 @@ out = {
         "unit": "g/kg",
         "pixels": soc["pixels"],
         "soc_g_kg": round(soc_g_kg, 1),
+    },
+    "sqi": {
+        "mean": sqi,
+        "unit": "",
+        "pixels": soc["pixels"],
+        "note": "由 SoilGrids SOC + pH 合成（0-100）",
     },
 }
 

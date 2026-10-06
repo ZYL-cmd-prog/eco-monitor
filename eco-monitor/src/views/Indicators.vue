@@ -18,6 +18,8 @@ const rsIndicators = computed(() => {
   const atmo = d.atmosphere || {}   // 卫星柱浓度（Sentinel-5P）
   const air = d.air || {}           // 监测站地面浓度（AQICN）
   const soil = d.soil || {}         // 土壤数据库（SoilGrids）
+  const water = d.water || {}       // 水体反演（FAI 藻类 / 浑浊度）
+  const npp = d.npp || {}           // 净初级生产力（MODIS）
 
   // 大气：优先监测站地面浓度（μg/m³，与演示单位一致），否则退回卫星柱浓度
   const so2Surf = air.so2?.mean
@@ -48,9 +50,13 @@ const rsIndicators = computed(() => {
     so2Entry,
     no2Entry,
     o3Entry,
+    npp.mean != null ? { code: 'NPP', name: '净初级生产力', category: '植被', value: round(npp.mean), unit: npp.unit || 'gC/m²·a', level: nppLevel(npp.mean), trend: 0, source: '遥感' } : null,
+    water.fai != null ? { code: 'FAI', name: '浮游藻类指数', category: '水体', value: round(water.fai.median), unit: '', level: faiLevel(water.fai.median), trend: 0, source: '遥感' } : null,
+    water.turbidity != null ? { code: 'RGBT', name: '浑浊度', category: '水体', value: round(water.turbidity.median), unit: water.turbidity.unit || 'NTU', level: turbidityLevel(water.turbidity.median), trend: 0, source: '遥感' } : null,
     aqiVal != null ? { code: 'AQI', name: '空气质量指数', category: '大气', value: round(aqiVal), unit: '', level: aqiLevel(aqiVal), trend: 0, source: '监测站' } : null,
     soil.ph != null ? { code: 'PH', name: '土壤酸碱度', category: '土壤', value: round(soil.ph.mean), unit: '', level: phLevel(soil.ph.mean), trend: 0, source: '土壤库' } : null,
     soil.som != null ? { code: 'SOM', name: '土壤有机质', category: '土壤', value: round(soil.som.mean), unit: soil.som.unit || 'g/kg', level: somLevel(soil.som.mean), trend: 0, source: '土壤库' } : null,
+    soil.sqi != null ? { code: 'SQI', name: '土壤质量指数', category: '土壤', value: round(soil.sqi.mean), unit: '', level: sqiLevel(soil.sqi.mean), trend: 0, source: '土壤库' } : null,
   ].filter(Boolean)
 })
 
@@ -164,6 +170,33 @@ function somLevel(v) {
   if (v < 40) return '良好'
   return '优'
 }
+function nppLevel(v) {
+  if (v == null) return '—'
+  if (v < 300) return '偏低'
+  if (v < 600) return '正常'
+  if (v < 900) return '良好'
+  return '优'
+}
+function faiLevel(v) {
+  if (v == null) return '—'
+  if (v < 0) return '正常'
+  if (v < 0.02) return '偏高'
+  return '高'
+}
+function turbidityLevel(v) {
+  if (v == null) return '—'
+  if (v < 10) return '优'
+  if (v < 30) return '良好'
+  if (v < 50) return '正常'
+  return '偏高'
+}
+function sqiLevel(v) {
+  if (v == null) return '—'
+  if (v < 60) return '偏低'
+  if (v < 75) return '正常'
+  if (v < 85) return '良好'
+  return '优'
+}
 
 const all = computed(() => {
   const real = rsIndicators.value
@@ -241,7 +274,7 @@ function trendColor(t) { return t > 0 ? '#0ca30c' : t < 0 ? '#d03b3b' : '#898781
       </table>
     </div>
 
-    <p class="note">植被 / 水体 / 生态类指数（NDVI / NDWI / EVI / FVC / LAI / 绿度 / 干度 / 湿度 / 热度）来自 Sentinel-2 / Landsat 遥感实算；SO2 / NO2 / O3 / AQI 优先用 AQICN 监测站地面浓度（μg/m³），无监测数据时退回 Sentinel-5P 卫星柱浓度；PH / SOM 来自 SoilGrids 全球土壤数据库；水质、重金属等仍需对接监测站（演示数据）。</p>
+    <p class="note">植被 / 水体 / 生态类指数（NDVI / NDWI / EVI / FVC / LAI / NPP / FAI / 浑浊度 / 绿度 / 干度 / 湿度 / 热度）来自 Sentinel-2 / Landsat / MODIS 遥感实算；SO2 / NO2 / O3 / AQI 优先用 AQICN 监测站地面浓度（μg/m³），无监测数据时退回 Sentinel-5P 卫星柱浓度；PH / SOM / SQI 来自 SoilGrids 全球土壤数据库；WQI（综合水质）、CMI（大型藻类）、HM（土壤重金属）仍需对接监测/采样数据（演示）。</p>
   </div>
 </template>
 

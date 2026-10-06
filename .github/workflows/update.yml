@@ -33,6 +33,8 @@ jobs:
           python s5p.py
           python aqi.py
           python soil.py
+          python npp.py
+          python water.py
           python export_frontend.py
 
       - uses: actions/setup-node@v4

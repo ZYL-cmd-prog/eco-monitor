@@ -47,6 +47,21 @@ print(f"找到 {len(items)} 景影像")
 if not items:
     raise SystemExit("没有找到符合条件的影像，请放宽时间或云量限制后重试")
 
+# 只保留真正覆盖宜宾主城区（三江汇合处）的影像——bbox 会与相邻瓦片擦边，
+# 直接按云量选可能选到只覆盖 bbox 一角、不含河流/水体的瓦片
+CENTER = (104.62, 28.76)   # 金沙江/岷江/长江汇合处（宜宾主城区）
+
+
+def _covers(it):
+    b = it.bbox or [0, 0, 0, 0]
+    return b[0] <= CENTER[0] <= b[2] and b[1] <= CENTER[1] <= b[3]
+
+
+covering = [it for it in items if _covers(it)]
+if covering:
+    print(f"覆盖宜宾主城区的影像 {len(covering)} 景")
+    items = covering
+
 item = min(items, key=lambda x: x.properties.get("eo:cloud_cover", 100))
 date = item.datetime.date().isoformat()
 print("选中:", item.id)
