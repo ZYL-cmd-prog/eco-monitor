@@ -130,14 +130,14 @@ const corrOption = computed(() => {
       </PanelBox>
       <PanelBox title="模型说明" sub="基线 → Transformer" class="span3">
         <ul class="model-list">
-          <li><b>当前模型：</b>线性趋势基线（Baseline 1，真实月度 NDVI）</li>
+          <li><b>当前模型：</b>趋势 + 季节性基线（MODIS 2000–今 月度 NDVI）</li>
           <li><b>目标架构：</b>Transformer（编码器 + 回归器，文档 2.3）</li>
           <li><b>输入通道：</b>1048（多源指标展平特征，目标）</li>
           <li><b>输出通道：</b>12（未来 12 期生态环境质量）</li>
           <li><b>编码层：</b>6 层 · 8 个注意力头 · 前馈网络（目标）</li>
           <li><b>任务：</b>多因子耦合诊断 / 时空演变 / 趋势预测 / 风险预警</li>
         </ul>
-        <p class="note">虚线为模型预测，阴影为 95% 置信区间。当前为线性趋势基线，接入完整历史时序后逐步升级到 Transformer。</p>
+        <p class="note">虚线为模型预测，阴影为 95% 置信区间。当前为「趋势 + 季节性」基线（MODIS 2000 年至今长期 NDVI），后续逐步升级到 Transformer。</p>
       </PanelBox>
     </div>
   </div>

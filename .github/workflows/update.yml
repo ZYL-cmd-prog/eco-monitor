@@ -35,6 +35,7 @@ jobs:
           python soil.py
           python npp.py
           python water.py
+          python modis_history.py
           python export_frontend.py
           python baseline.py
           python uav.py

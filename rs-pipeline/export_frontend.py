@@ -94,6 +94,12 @@ ts_path = RESULT / "timeseries.json"
 if ts_path.exists():
     timeseries = json.loads(ts_path.read_text(encoding="utf-8"))
 
+# 长期 MODIS NDVI/EVI 时间序列（2000 年至今，由 modis_history.py 生成；没有则空列表）
+modis_history = []
+mh_path = RESULT / "modis_history.json"
+if mh_path.exists():
+    modis_history = json.loads(mh_path.read_text(encoding="utf-8"))
+
 data = {
     "region": "宜宾市 · 长江上游示范区",
     "satellite": "Sentinel-2 L2A",
@@ -111,6 +117,7 @@ data = {
         "image": "/data/NDWI.png",
     },
     "timeseries": timeseries,
+    "modisHistory": modis_history,
     "indices": indices,
     "atmosphere": atmosphere,
     "air": air,
