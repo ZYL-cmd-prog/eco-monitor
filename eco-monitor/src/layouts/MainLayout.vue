@@ -4,6 +4,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 const navs = [
   { path: '/dashboard', name: '综合大屏', icon: '◈' },
   { path: '/indicators', name: '指标管理', icon: '▤' },
+  { path: '/uav', name: '无人机巡查', icon: '✈' },
   { path: '/analysis', name: '智能分析', icon: '◬' },
   { path: '/alerts', name: '预警中心', icon: '⚠' },
 ]

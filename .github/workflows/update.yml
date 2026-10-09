@@ -37,6 +37,7 @@ jobs:
           python water.py
           python export_frontend.py
           python baseline.py
+          python uav.py
 
       - uses: actions/setup-node@v4
         with:

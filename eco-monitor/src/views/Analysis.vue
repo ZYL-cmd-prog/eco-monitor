@@ -109,13 +109,13 @@ const corrOption = computed(() => {
       <PanelBox title="生态环境质量趋势预测" sub="历史 12 期 + 未来 12 期" class="span2">
         <BaseChart :option="predOption" height="300px" />
       </PanelBox>
-      <PanelBox title="多因子相关性矩阵" sub="相关系数 -1 ~ 1" class="span2">
+      <PanelBox title="多因子相关性矩阵" sub="相关系数 -1 ~ 1 · 演示数据" class="span2">
         <BaseChart :option="corrOption" height="300px" />
       </PanelBox>
     </div>
 
     <div class="grid">
-      <PanelBox title="污染源贡献率溯源" sub="%">
+      <PanelBox title="污染源贡献率溯源" sub="贡献率 % · 演示数据">
         <div class="tracing">
           <div v-for="t in tracing" :key="t.source" class="trace-item">
             <div class="trace-head">
