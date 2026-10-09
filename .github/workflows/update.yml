@@ -36,6 +36,7 @@ jobs:
           python npp.py
           python water.py
           python export_frontend.py
+          python baseline.py
 
       - uses: actions/setup-node@v4
         with:
