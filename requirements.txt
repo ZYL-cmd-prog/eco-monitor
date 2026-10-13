@@ -5,3 +5,4 @@ planetary-computer
 Pillow
 matplotlib
 netcdf4
+torch

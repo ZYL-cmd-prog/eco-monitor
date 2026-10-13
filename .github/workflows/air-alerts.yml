@@ -1,0 +1,48 @@
+name: 更新空气质量与预警（准实时）
+
+# 轻量工作流：只刷新大气监测站（AQICN）数据 + 规则引擎预警，不跑遥感管线。
+# 先从线上拉取上一轮发布的全部数据文件（遥感 json/png、预测等，public/data/ 已 gitignore），
+# 再覆盖大气/预警后重新构建部署，保证影像/预测文件不丢失。
+
+on:
+  schedule:
+    # 每 3 小时一次（07 分，避开整点）。AQICN 免费 token 配额充足时可改成 "7 * * * *" 每小时。
+    - cron: "7 */3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  air-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 拉取线上数据（遥感/预测/影像等）
+        run: python rs-pipeline/fetch_live_data.py
+
+      - name: 拉取最新空气质量监测站数据
+        env:
+          AQICN_TOKEN: ${{ secrets.AQICN_TOKEN }}
+        run: python rs-pipeline/aqi.py
+
+      - name: 生成分级预警
+        run: python rs-pipeline/alerts.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 构建前端
+        run: |
+          cd eco-monitor
+          npm install
+          npm run build
+
+      - name: 部署到 Netlify
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: python rs-pipeline/deploy.py

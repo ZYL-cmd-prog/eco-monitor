@@ -1,3 +1,9 @@
 # Netlify 配置：告诉 CLI 部署 dist/ 目录
 [build]
   publish = "dist"
+
+# 数据 JSON 短缓存（大气/预警数据每 3h~1 周刷新，前端 60s 轮询）
+[[headers]]
+  for = "/data/*.json"
+  [headers.values]
+    Cache-Control = "public, max-age=60, must-revalidate"

@@ -38,6 +38,8 @@ jobs:
           python modis_history.py
           python export_frontend.py
           python baseline.py
+          python transformer.py
+          python alerts.py
           python uav.py
 
       - uses: actions/setup-node@v4

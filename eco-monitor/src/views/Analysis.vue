@@ -10,19 +10,37 @@ const AXIS = {
   splitLine: { lineStyle: { color: '#2c2c2a' } },
 }
 
-// 真实预测数据：rs-pipeline/baseline.py 生成的 prediction.json；缺失时回退 mock
+// 真实预测数据：rs-pipeline/transformer.py（或 baseline.py）生成的 prediction.json；缺失时回退 mock
 const prediction = ref(null)
+const isReal = ref(false)
+const target = ref('ndvi')
 
 onMounted(async () => {
   try {
-    const res = await fetch('/data/prediction.json')
+    const res = await fetch('/data/prediction.json', { cache: 'no-store' })
     if (res.ok) {
-      prediction.value = await res.json()
+      const d = await res.json()
+      prediction.value = d
+      isReal.value = true
+      target.value = targetsOf(d)[0] || 'ndvi'
       return
     }
   } catch (e) { /* 回退 mock */ }
   prediction.value = mockPrediction
 })
+
+// 兼容两种格式：多指标 series（transformer.py）与旧平铺格式（baseline.py / mock）
+function targetsOf(p) {
+  if (p && p.series) return p.targets || Object.keys(p.series)
+  if (p && p.labels) return [p.target || 'ndvi']
+  return [mockPrediction.target || 'ndvi']
+}
+function seriesOf(p, t) {
+  if (p && p.series) return p.series[t] || p.series[targetsOf(p)[0]] || null
+  return p
+}
+const targets = computed(() => targetsOf(prediction.value))
+const isMulti = computed(() => !!(prediction.value && prediction.value.series))
 
 // 把 history/future/置信区间对齐成完整长度（缺失段补 null），兼容旧 mock 的短数组格式
 function normalize(p) {
@@ -31,7 +49,6 @@ function normalize(p) {
   const pad = (arr, toEnd) => {
     let a = (arr || []).slice(0, L)
     if (toEnd && a.length < L && a[0] != null) {
-      // 旧 mock 的 future 是 12 个值、无前导 null，整体移到尾部
       a = [...Array(L - a.length).fill(null), ...a]
     }
     while (a.length < L) a.push(null)
@@ -46,8 +63,18 @@ function normalize(p) {
   }
 }
 
+const curSeries = computed(() => normalize(seriesOf(prediction.value, target.value)))
+
+const predSub = computed(() => {
+  const p = curSeries.value
+  if (!p) return '待生成'
+  const n = p.history.filter((v) => v != null).length
+  const f = p.future.filter((v) => v != null).length
+  return `历史 ${n} 期 + 预测 ${f} 期`
+})
+
 const predOption = computed(() => {
-  const p = normalize(prediction.value)
+  const p = curSeries.value
   if (!p) return {}
   const hist = p.history
   const fut = p.future
@@ -76,6 +103,19 @@ const predOption = computed(() => {
     ],
   }
 })
+
+const modelInfo = computed(() => {
+  const p = prediction.value
+  if (!p) return []
+  const rows = []
+  if (p.model) rows.push(['当前模型', p.model])
+  if (p.inputChannels != null) rows.push(['输入通道', `${p.inputChannels}（${p.features?.join(' × ') || '多源指标展平'}）`])
+  if (p.outputChannels != null) rows.push(['输出通道', `${p.outputChannels}`])
+  if (p.horizon != null) rows.push(['预测期数', `未来 ${p.horizon} 期`])
+  if (p.generatedAt) rows.push(['生成时间', p.generatedAt])
+  return rows
+})
+const modelNote = computed(() => prediction.value?.note || '')
 
 const corrOption = computed(() => {
   const names = correlation.names
@@ -106,7 +146,14 @@ const corrOption = computed(() => {
 <template>
   <div class="ana">
     <div class="grid">
-      <PanelBox title="生态环境质量趋势预测" sub="历史 12 期 + 未来 12 期" class="span2">
+      <PanelBox :title="`生态环境质量趋势预测${isMulti ? ' · ' + target : ''}`" :sub="predSub" class="span2">
+        <div v-if="isMulti && targets.length > 1" class="target-tabs">
+          <button
+            v-for="t in targets" :key="t"
+            class="tab" :class="{ active: t === target }"
+            @click="target = t"
+          >{{ t.toUpperCase() }}</button>
+        </div>
         <BaseChart :option="predOption" height="300px" />
       </PanelBox>
       <PanelBox title="多因子相关性矩阵" sub="相关系数 -1 ~ 1 · 演示数据" class="span2">
@@ -128,16 +175,16 @@ const corrOption = computed(() => {
           </div>
         </div>
       </PanelBox>
-      <PanelBox title="模型说明" sub="基线 → Transformer" class="span3">
+      <PanelBox title="模型说明" :sub="isReal ? '真实模型' : '演示数据'" class="span3">
         <ul class="model-list">
-          <li><b>当前模型：</b>趋势 + 季节性基线（MODIS 2000–今 月度 NDVI）</li>
-          <li><b>目标架构：</b>Transformer（编码器 + 回归器，文档 2.3）</li>
-          <li><b>输入通道：</b>1048（多源指标展平特征，目标）</li>
-          <li><b>输出通道：</b>12（未来 12 期生态环境质量）</li>
-          <li><b>编码层：</b>6 层 · 8 个注意力头 · 前馈网络（目标）</li>
-          <li><b>任务：</b>多因子耦合诊断 / 时空演变 / 趋势预测 / 风险预警</li>
+          <li v-for="[k, v] in modelInfo" :key="k"><b>{{ k }}：</b>{{ v }}</li>
         </ul>
-        <p class="note">虚线为模型预测，阴影为 95% 置信区间。当前为「趋势 + 季节性」基线（MODIS 2000 年至今长期 NDVI），后续逐步升级到 Transformer。</p>
+        <p v-if="modelNote" class="note">{{ modelNote }}</p>
+        <p class="note">
+          虚线为模型预测，阴影为 95% 置信区间。
+          <template v-if="isReal">由 rs-pipeline 训练生成；输入为过去时间窗指标序列，输出未来多期生态环境质量。</template>
+          <template v-else>当前展示为演示数据，运行 rs-pipeline 后接入真实模型预测。</template>
+        </p>
       </PanelBox>
     </div>
   </div>
@@ -145,6 +192,13 @@ const corrOption = computed(() => {
 
 <style scoped>
 .ana { display: flex; flex-direction: column; gap: 16px; }
+.target-tabs { display: flex; gap: 8px; margin-bottom: 6px; }
+.tab {
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-secondary);
+  border-radius: 6px; padding: 3px 12px; font-size: 12px; cursor: pointer; font-family: inherit;
+}
+.tab.active { color: #2fd08b; border-color: #2fd08b; background: rgba(47, 208, 139, 0.10); }
+
 .tracing { display: flex; flex-direction: column; gap: 14px; padding: 6px 2px; }
 .trace-item { display: flex; flex-direction: column; gap: 5px; }
 .trace-head { display: flex; justify-content: space-between; font-size: 13px; }

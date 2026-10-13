@@ -106,6 +106,7 @@ data = {
     "source": "Microsoft Planetary Computer",
     "date": date,
     "generatedAt": datetime.now().strftime("%Y-%m-%d"),
+    "stations": air.get("stations", []) if air else [],
     "ndvi": {
         **stats(ndvi),
         "vegetationRatio": round(float((ndvi[np.isfinite(ndvi)] > 0.3).mean()), 4),
