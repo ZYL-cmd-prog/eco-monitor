@@ -103,6 +103,45 @@ export const stations = [
   { name: '昆明站', lon: 102.83, lat: 24.88, type: '生态站', value: 82 },
 ]
 
+// 无人机巡查（演示样例，uav.json 缺失时回退）
+export const uavDemo = {
+  demo: true,
+  note: '无人机巡查模块（「空—天—地」之空层）。当前为演示样例，待接入真实无人机正射影像与巡查记录。',
+  summary: { flights: 12, coverage: 8.6, findings: 5, rectified: 3 },
+  route: {
+    waypoints: [
+      [104.608, 28.742], [104.618, 28.748], [104.628, 28.752],
+      [104.636, 28.750], [104.634, 28.742], [104.624, 28.736],
+      [104.612, 28.738], [104.608, 28.742],
+    ],
+    start: '起降点', lengthKm: 5.2, area: '宜宾·长江上游示范区（示例航线）',
+  },
+  tasks: [
+    { id: 'UAV-2026-1013', name: '长江干流河道漂浮物专项', area: '宜宾·长江上游示范区', type: '河道漂浮物 / 岸线', status: '执行中', progress: 60 },
+    { id: 'UAV-2026-1012', name: '农村人居环境整治巡查', area: '示范区内某行政村', type: '人居环境整治', status: '待执行', progress: 0 },
+    { id: 'UAV-2026-1010', name: '消落带植被修复点复查', area: '长江消落带', type: '生态修复前后对比', status: '已完成', progress: 100 },
+    { id: 'UAV-2026-1008', name: '农业面源污染巡查', area: '示范区农田区', type: '农业面源污染', status: '已完成', progress: 100 },
+    { id: 'UAV-2026-1006', name: '岸线违规堆放排查', area: '长江左岸某段', type: '河道漂浮物 / 岸线', status: '已完成', progress: 100 },
+  ],
+  findings: [
+    { level: '橙色', type: '河道漂浮物', area: '长江干流某段', status: '处理中', desc: '示例：疑似漂浮物聚集，待人工复核' },
+    { level: '黄色', type: '农村生活垃圾堆放', area: '示范区内某行政村', status: '待处理', desc: '示例：路边垃圾堆放点，建议限期清理' },
+    { level: '蓝色', type: '岸线违规种植', area: '长江左岸某段', status: '已整改', desc: '示例：消落带违规种植，已清理' },
+    { level: '黄色', type: '农业面源污染', area: '示范区农田区', status: '已整改', desc: '示例：疑似农药瓶乱弃，已处置' },
+    { level: '蓝色', type: '生态修复点位', area: '长江消落带', status: '已整改', desc: '示例：修复点位植被长势良好' },
+  ],
+  restoration: [
+    { point: '消落带植被修复点', before: 'NDVI 0.32', after: 'NDVI 0.58', change: '+81%', note: '示例：消落带复绿，前后对比待接入真实影像' },
+    { point: '岸线湿地修复点', before: '湿地面积 1.2 亩', after: '湿地面积 2.0 亩', change: '+67%', note: '示例：岸线湿地恢复，前后对比待接入真实影像' },
+    { point: '矿山迹地修复点', before: 'NDVI 0.21', after: 'NDVI 0.46', change: '+119%', note: '示例：矿山迹地复绿，前后对比待接入真实影像' },
+  ],
+  flights: [
+    { date: '2026-10-14', area: '宜宾·长江上游示范区', type: '河道漂浮物 / 岸线巡查', finding: '示例：发现疑似漂浮物聚集 1 处', status: '演示样例' },
+    { date: '2026-10-11', area: '长江消落带', type: '生态修复点位前后对比', finding: '示例：修复点位植被长势良好', status: '演示样例' },
+    { date: '2026-10-09', area: '示范区农田区', type: '农业面源污染巡查', finding: '示例：疑似农药瓶乱弃 1 处', status: '演示样例' },
+  ],
+}
+
 // 预警事件
 export const alerts = [
   { time: '2025-11-04 08:20', area: '宜宾城区', type: '大气污染', level: '红色', status: '处理中', desc: 'PM2.5 连续 3 小时超标，启动应急响应' },
