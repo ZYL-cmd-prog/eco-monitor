@@ -7,6 +7,7 @@ const navs = [
   { path: '/uav', name: '无人机巡查', icon: '✈' },
   { path: '/analysis', name: '智能分析', icon: '◬' },
   { path: '/alerts', name: '预警中心', icon: '⚠' },
+  { path: '/decision', name: '治理决策', icon: '⚖' },
 ]
 
 const now = ref('')

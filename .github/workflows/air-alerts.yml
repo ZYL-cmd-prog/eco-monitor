@@ -31,6 +31,9 @@ jobs:
       - name: 生成分级预警
         run: python rs-pipeline/alerts.py
 
+      - name: 生成治理决策
+        run: python rs-pipeline/decision.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

@@ -40,6 +40,7 @@ jobs:
           python baseline.py
           python transformer.py
           python alerts.py
+          python decision.py
           python uav.py
 
       - uses: actions/setup-node@v4

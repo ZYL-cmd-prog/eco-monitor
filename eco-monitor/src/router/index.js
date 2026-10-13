@@ -12,6 +12,7 @@ const routes = [
       { path: 'uav', name: 'Uav', component: () => import('../views/Uav.vue'), meta: { title: '无人机巡查' } },
       { path: 'analysis', name: 'Analysis', component: () => import('../views/Analysis.vue'), meta: { title: '智能分析' } },
       { path: 'alerts', name: 'Alerts', component: () => import('../views/Alerts.vue'), meta: { title: '预警中心' } },
+      { path: 'decision', name: 'Decision', component: () => import('../views/Decision.vue'), meta: { title: '治理决策' } },
     ],
   },
 ]
