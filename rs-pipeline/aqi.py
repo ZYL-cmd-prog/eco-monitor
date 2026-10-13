@@ -80,7 +80,7 @@ out = {
     "so2": {"mean": v("so2"), "unit": "μg/m³"},
     "no2": {"mean": v("no2"), "unit": "μg/m³"},
     "o3": {"mean": v("o3"), "unit": "μg/m³"},
-    "co": {"mean": v("co"), "unit": "mg/m³"},
+    "co": {"mean": v("co"), "unit": "μg/m³"},   # AQICN 的 v 字段统一 μg/m³（CO 也是，非 mg/m³）
     "stations": stations,
 }
 

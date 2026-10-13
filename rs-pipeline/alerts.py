@@ -120,10 +120,10 @@ def air_alerts(air):
             add("O3", o3, "μg/m³", "橙色", f"O3 浓度 {o3} μg/m³，超标（8h 限值 160）")
         elif o3 > 160:
             add("O3", o3, "μg/m³", "黄色", f"O3 浓度 {o3} μg/m³，超过 8h 二级限值 160")
-    # CO（24h 二级限值 4 mg/m³）
+    # CO（24h 二级限值 4 mg/m³ = 4000 μg/m³；AQICN 返回单位为 μg/m³）
     if co is not None:
-        if co > 4:
-            add("CO", co, "mg/m³", "黄色", f"CO 浓度 {co} mg/m³，超过 24h 二级限值 4")
+        if co > 4000:
+            add("CO", co, "μg/m³", "黄色", f"CO 浓度 {co} μg/m³，超过 24h 二级限值 4000 μg/m³（4 mg/m³）")
     return out
 
 
